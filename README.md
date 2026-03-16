@@ -1,120 +1,101 @@
 # ENGSE207 Software Architecture
 
-## Final Lab — Set 1: Secure Microservices Task Board
+## Final Lab — Set 2: Cloud Microservices Task Board
 
 ---
 
 # 1. Course Information
 
-**รายวิชา:** ENGSE207 Software Architecture
-**งาน:** Final Lab Set 1
-
-**ผู้จัดทำ:** 67543210005-4 Sarisah Thawanwarasak
-
-**Repository:** 
----
 **Course:** ENGSE207 Software Architecture
-**Assignment:** Final Lab — Set 1
-**Topic:** Microservices Architecture with HTTPS, JWT Authentication, and Logging
+**Assignment:** Final Lab — Set 2
+**Topic:** Cloud-Native Microservices with JWT, Database-per-Service, and Deployment
 
 **Student:**
-67543210005-4
-Sarisah Thawanwarasak
+67543210005-4 นางสาวสาริศา ถวัลย์วราศักดิ์
 
 **Repository:**
-`final-lab/set1`
+`engse207-final-lab2-67543210005`
 
 ---
 
 # 2. System Overview
 
-โปรเจกต์นี้เป็นระบบ **Task Board แบบ Microservices** ที่ออกแบบเพื่อฝึกการพัฒนาสถาปัตยกรรมซอฟต์แวร์ที่ปลอดภัยและสามารถแยกส่วนการทำงานได้อย่างชัดเจน
+โปรเจกต์นี้เป็นระบบ **Task Board แบบ Cloud Microservices** ที่พัฒนาต่อยอดจาก Set 1
+โดยเน้นการแยกบริการอย่างสมบูรณ์และการ deploy ขึ้น Cloud
 
-ระบบประกอบด้วยหลาย services ที่ทำงานร่วมกันผ่าน **API Gateway (Nginx)** และใช้ **HTTPS** เพื่อเข้ารหัสการสื่อสารทั้งหมด
+แนวคิดหลักของระบบ
+
+* Microservices Architecture เต็มรูปแบบ
+* แยกฐานข้อมูลต่อ service (Database-per-Service)
+* สื่อสารผ่าน REST APIs
+* ยืนยันตัวตนด้วย JWT
+* Deploy บน Cloud Platform
+* ทดสอบ API ผ่าน curl และ Frontend
 
 ฟีเจอร์หลักของระบบ
 
-* Login ด้วย **JWT Authentication**
+* Register / Login ด้วย JWT Authentication
+* จัดการข้อมูลผู้ใช้ (User Profile)
 * สร้าง / แก้ไข / ลบ Tasks
-* Reverse Proxy ด้วย **Nginx**
-* ใช้ **HTTPS (Self-Signed Certificate)**
-* มี **Logging Service** สำหรับบันทึกเหตุการณ์
-* รันทุก service ผ่าน **Docker Compose**
-
-หมายเหตุ
-ระบบนี้ **ไม่มี Register API** และใช้ **Seed Users** สำหรับทดสอบเท่านั้น
+* สิทธิ์การใช้งานตาม Role (User / Admin)
+* แต่ละ service มีฐานข้อมูลของตัวเอง
+* รันผ่าน Docker Compose (Local)
+* Deploy บน Railway (Cloud)
 
 ---
 
 # 3. System Architecture
 
-ระบบถูกออกแบบตามแนวคิด **Microservices Architecture**
+ระบบออกแบบตามแนวคิด **Cloud Microservices Architecture**
 
-```
-Browser / Postman
-<<<<<<< HEAD
-│
-│ HTTPS :443
-▼
-Nginx (API Gateway)
-├─ /api/auth/* → auth-service
-├─ /api/tasks/* → task-service
-├─ /api/logs/* → log-service
-└─ / → frontend
-
-▼
-
-PostgreSQL Database
-
-        │
-        │ HTTPS :443
-        ▼
-   Nginx (API Gateway)
-        │
-        ├── /api/auth/*  → auth-service
-        ├── /api/tasks/* → task-service
-        ├── /api/logs/*  → log-service
-        └── /            → frontend
-                │
-                ▼
-          PostgreSQL
+```text
+Client (Browser / Postman / curl)
+            │
+            │ HTTPS
+            ▼
+        API Services (Cloud)
+            │
+ ┌──────────┼──────────┐
+ ▼          ▼          ▼
+Auth      User       Task
+Service   Service    Service
+ │          │          │
+ ▼          ▼          ▼
+Auth DB   User DB    Task DB
+(Postgres)(Postgres) (Postgres)
 ```
 
-Services ในระบบ
+---
 
-| Service      | Description                     |
-| ------------ | ------------------------------- |
-| nginx        | Reverse proxy และ HTTPS gateway |
-| frontend     | หน้าเว็บ Task Board             |
-| auth-service | Authentication และ JWT          |
-| task-service | CRUD operations สำหรับ tasks    |
-| log-service  | บันทึกและแสดง logs              |
-| postgres     | ฐานข้อมูลของระบบ                |
+## Services ในระบบ
+
+| Service      | Description                  |
+| ------------ | ---------------------------- |
+| auth-service | Authentication และ JWT       |
+| user-service | จัดการข้อมูลผู้ใช้           |
+| task-service | CRUD operations สำหรับ tasks |
+| auth-db      | ฐานข้อมูลของ auth-service    |
+| user-db      | ฐานข้อมูลของ user-service    |
+| task-db      | ฐานข้อมูลของ task-service    |
 
 ---
 
 # 4. Repository Structure
 
-```
-final-lab/set1/
+```text
+final-lab/set2/
 ├── README.md
+├── TEAM_SPLIT.md
+├── INDIVIDUAL_REPORT_[studentid].md
 ├── docker-compose.yml
 ├── .env.example
-├── .gitignore
-│
-├── nginx/
-│   ├── nginx.conf
-│   ├── Dockerfile
-│   └── certs/
-│       ├── cert.pem
-│       └── key.pem
-│
-├── frontend/
-│   ├── Dockerfile
-│   ├── index.html
-│   └── logs.html
 │
 ├── auth-service/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/
+│
+├── user-service/
 │   ├── Dockerfile
 │   ├── package.json
 │   └── src/
@@ -124,18 +105,9 @@ final-lab/set1/
 │   ├── package.json
 │   └── src/
 │
-├── log-service/
-│   ├── Dockerfile
-│   ├── package.json
-│   └── src/
-│
-├── db/
-│   └── init.sql
-│
-├── scripts/
-│   └── gen-certs.sh
-│
-└── screenshots/
+└── frontend/
+    ├── index.html
+    └── assets/
 ```
 
 ---
@@ -147,283 +119,266 @@ final-lab/set1/
 * PostgreSQL
 * Docker
 * Docker Compose
-* Nginx
 * JWT (jsonwebtoken)
 * bcryptjs
 * HTML / JavaScript
+* Railway (Cloud Deployment)
 
 ---
 
-# 6. HTTPS Configuration
+# 6. Database Design (Database-per-Service)
 
-ระบบใช้ **Self-Signed Certificate** สำหรับการเข้ารหัสการสื่อสาร
+| Service      | Database | Purpose                    |
+| ------------ | -------- | -------------------------- |
+| auth-service | auth_db  | เก็บบัญชีผู้ใช้และรหัสผ่าน |
+| user-service | user_db  | เก็บข้อมูลโปรไฟล์ผู้ใช้    |
+| task-service | task_db  | เก็บข้อมูลงาน (tasks)      |
 
-สร้าง certificate ด้วย script
+ข้อดีของการแยกฐานข้อมูล
 
-```
-chmod +x scripts/gen-certs.sh
-./scripts/gen-certs.sh
-```
-
-เมื่อเปิดผ่าน browser จะพบข้อความ
-
-```
-Your connection is not private
-net::ERR_CERT_AUTHORITY_INVALID
-```
-
-เนื่องจาก certificate ไม่ได้ออกโดย Trusted CA
-ซึ่งเป็น behavior ปกติสำหรับ development environment
+* ลดการพึ่งพากันระหว่าง service
+* เพิ่มความปลอดภัยของข้อมูล
+* รองรับการขยายระบบในอนาคต
 
 ---
 
-# 7. Running the System
+# 7. Running the System (Local)
 
-## 1. Create .env file
+## 7.1 สร้างไฟล์ .env
 
 ตัวอย่าง
 
-```
-POSTGRES_DB=taskboard
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=secret123
-
-JWT_SECRET=engse207-secret
+```env
+JWT_SECRET=dev-secret
 JWT_EXPIRES=1h
 ```
 
 ---
 
-## 2. Generate bcrypt password hashes
+## 7.2 รันระบบด้วย Docker
 
-ตัวอย่าง
-
-```
-node -e "const b=require('bcryptjs'); console.log(b.hashSync('alice123',10))"
-```
-
-นำ hash ที่ได้ไปแทนค่าใน
-
-```
-db/init.sql
-```
-
----
-
-## 3. Run the system
-
-```
+```bash
 docker compose down -v
 docker compose up --build
 ```
 
-เมื่อ container ทำงานแล้ว สามารถเข้าใช้งานได้ที่
+---
+
+## 7.3 Ports ที่ใช้
+
+| Service      | Port |
+| ------------ | ---- |
+| auth-service | 3001 |
+| task-service | 3002 |
+| user-service | 3003 |
+| auth-db      | 5433 |
+| task-db      | 5434 |
+| user-db      | 5435 |
+
+---
+
+# 8. API Summary
+
+## Auth Service
 
 ```
-https://localhost
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+GET  /api/auth/health
 ```
 
 ---
 
-# 8. Seed Users
+## User Service
 
-<<<<<<< HEAD
-| Username | Email | Password | Role |   
-|----------|-------|----------|------|    
-| alice | [alice@lab.local](mailto:alice@lab.local) | alice123 | member |   
-| bob | [bob@lab.local](mailto:bob@lab.local) | bob456 | member |   
-| admin | [admin@lab.local](mailto:admin@lab.local) | adminpass | admin |   
-=======
-| Username | Email                                     | Password  | Role   |
-| -------- | ----------------------------------------- | --------- | ------ |
-| alice    | [alice@lab.local](mailto:alice@lab.local) | alice123  | member |
-| bob      | [bob@lab.local](mailto:bob@lab.local)     | bob456    | member |
-| admin    | [admin@lab.local](mailto:admin@lab.local) | adminpass | admin  |
-
-Password จะถูก hash ด้วย **bcrypt** ก่อนเก็บในฐานข้อมูล
->>>>>>> 71cba75 (Update Set1)
+```
+GET  /api/users/me
+PUT  /api/users/me
+GET  /api/users        (admin only)
+GET  /api/users/health
+```
 
 ---
 
-# 9. Security Design
+## Task Service
 
-## HTTPS
-
-Nginx ทำหน้าที่เป็น HTTPS gateway
-
-Browser → HTTPS → Nginx → Services
-
-ทุก request จาก client จะถูกเข้ารหัสก่อนเข้าสู่ระบบ
+```
+GET    /api/tasks
+POST   /api/tasks
+PUT    /api/tasks/:id
+DELETE /api/tasks/:id
+GET    /api/tasks/health
+```
 
 ---
 
-## JWT Authentication
+# 9. Authentication Flow
 
-หลัง login สำเร็จ
-
-Auth Service จะสร้าง JWT token
+1. ผู้ใช้สมัครสมาชิกผ่าน Register API
+2. Login สำเร็จ → ได้รับ JWT Token
+3. ส่ง Token ผ่าน Header
 
 ```
 Authorization: Bearer <token>
 ```
 
-Task Service และ Log Service จะตรวจสอบ token ก่อนอนุญาตให้ใช้งาน
+4. ทุก service ตรวจสอบ token ก่อนให้ใช้งาน
 
 ---
 
-## Role-based Access Control
+# 10. Role-Based Access Control
 
-| Role   | Permissions     |
-| ------ | --------------- |
-| member | ใช้งาน Task API |
-| admin  | ดู logs ของระบบ |
-
----
-
-# 10. Logging System
-
-ทุก service สามารถส่ง log ไปยัง **log-service**
-
-ตัวอย่างเหตุการณ์ที่ถูกบันทึก
-
-* login success / failure
-* create task
-* update task
-* delete task
-* unauthorized request
-
-Admin สามารถดู logs ผ่าน
-
-```
-/api/logs
-```
-
-หรือผ่านหน้า
-
-```
-https://localhost/logs.html
-```
+| Role  | Permissions                  |
+| ----- | ---------------------------- |
+| user  | จัดการ tasks และโปรไฟล์ตนเอง |
+| admin | ดูข้อมูลผู้ใช้ทั้งหมด        |
 
 ---
 
-# 11. API Summary
+# 11. Cloud Deployment (Railway)
 
-Auth Service
+ระบบถูก deploy แยก service บน Railway
 
-```
-POST /api/auth/login
-GET /api/auth/verify
-GET /api/auth/me
-```
-
-Task Service
-
-```
-GET /api/tasks
-POST /api/tasks
-PUT /api/tasks/:id
-DELETE /api/tasks/:id
-```
-
-Log Service
-
-```
-POST /api/logs/internal
-GET /api/logs
-GET /api/logs/stats
-```
----
-
-# 10. การทดสอบระบบ
-
-ขั้นตอนการทดสอบ
-
-1 รัน docker compose   
-2 เปิด https://localhost   
-3 login ด้วย seed users   
-4 สร้าง task   
-5 แก้ไข task   
-6 ลบ task   
-7 ทดสอบ request ที่ไม่มี JWT → ต้องได้ 401   
-8 ตรวจสอบ logs    
+| Service      | Deployment          |
+| ------------ | ------------------- |
+| auth-service | Railway Web Service |
+| user-service | Railway Web Service |
+| task-service | Railway Web Service |
+| databases    | Railway PostgreSQL  |
 
 ---
 
-# 12. Test Cases
+# 12. Testing via curl (Cloud)
 
-ระบบถูกทดสอบตามข้อกำหนดใน assignment
+## Register
 
-| Test | Description                           |
-| ---- | ------------------------------------- |
-| T1   | Docker compose run successfully       |
-| T2   | HTTPS access with certificate warning |
-| T3   | Login success                         |
-| T4   | Login fail                            |
-| T5   | Create task                           |
-| T6   | Get tasks                             |
-| T7   | Update task                           |
-| T8   | Delete task                           |
-| T9   | Request without JWT → 401             |
-| T10  | Admin access logs                     |
-| T11  | Rate limiting on login                |
+```bash
+curl -X POST https://AUTH_URL/api/auth/register \
+-H "Content-Type: application/json" \
+-d '{
+  "username":"testuser",
+  "email":"testuser@example.com",
+  "password":"123456"
+}'
+```
 
-หลักฐาน screenshots อยู่ในโฟลเดอร์
+---
+
+## Login
+
+```bash
+TOKEN=$(curl -s -X POST https://AUTH_URL/api/auth/login \
+-H "Content-Type: application/json" \
+-d '{
+  "email":"testuser@example.com",
+  "password":"123456"
+}' | jq -r '.token')
+```
+
+---
+
+## Create Task
+
+```bash
+curl -X POST https://TASK_URL/api/tasks \
+-H "Authorization: Bearer $TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "title":"My first cloud task",
+  "description":"Deploy all services",
+  "status":"TODO",
+  "priority":"high"
+}'
+```
+
+---
+
+## Get Tasks
+
+```bash
+curl https://TASK_URL/api/tasks \
+-H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+# 13. Test Cases
+
+| Test | Description                     |
+| ---- | ------------------------------- |
+| T1   | Docker compose run successfully |
+| T2   | Register success                |
+| T3   | Login success                   |
+| T4   | JWT authentication              |
+| T5   | Create task                     |
+| T6   | Get tasks                       |
+| T7   | Update task                     |
+| T8   | Delete task                     |
+| T9   | Unauthorized request → 401      |
+| T10  | Admin access users list         |
+| T11  | Cloud deployment success        |
+
+---
+
+# 14. Screenshots
+
+เก็บหลักฐานการทำงานไว้ในโฟลเดอร์
 
 ```
 /screenshots
 ```
 
----
-
-# 13. Screenshots
-
-ตัวอย่าง screenshots ที่แนบ
+ตัวอย่างภาพ
 
 * Docker containers running
-* HTTPS browser warning
+* Register success
 * Login success
-* Login failure
+* JWT token received
 * Create task
 * Get tasks
 * Update task
 * Delete task
 * Unauthorized request
-* Log dashboard
-* Rate limit response
+* Admin access
+* Railway deployment
 
 ---
 
-# 14. Problems Encountered
+# 15. Problems Encountered
 
 ปัญหาที่พบระหว่างพัฒนา
 
-* bcrypt hash ไม่ตรง ทำให้ login ไม่สำเร็จ
-* nginx route path ไม่ตรงกับ service endpoint
-* docker volume ทำให้ seed users ไม่อัปเดต
-* HTTPS certificate warning ใน browser
+* JWT secret ไม่ตรงกันระหว่าง services
+* Database schema ไม่ถูกสร้างอัตโนมัติ
+* Docker volume เก็บข้อมูลเก่าทำให้ seed ไม่ทำงาน
+* CORS error ระหว่าง frontend กับ backend
+* Port ชนกันระหว่าง services
 
 ---
 
-# 15. Known Limitations
+# 16. Known Limitations
 
 ข้อจำกัดของระบบ
 
-* ใช้ self-signed certificate
-* database ยังเป็น shared database
-* ไม่มีระบบ register
-* logging เป็น lightweight
+* ยังไม่มี API Gateway รวมศูนย์
+* ไม่มี HTTPS ใน local environment
+* ยังไม่มี refresh token
+* ยังไม่มี monitoring/observability เต็มรูปแบบ
 
 ---
 
-# 16. Future Improvements
+# 17. Future Improvements
 
 แนวทางพัฒนาต่อ
 
-* เพิ่ม register API
+* เพิ่ม API Gateway
+* เพิ่ม HTTPS และ Domain จริง
+* เพิ่ม Refresh Token
+* เพิ่ม Centralized Logging
+* เพิ่ม Monitoring Dashboard
+* ใช้ Kubernetes orchestration
 
-* แยก database per service   
-* deploy บน cloud   
-* แยก database ต่อ service   
-* เพิ่ม refresh token   
-* เพิ่ม monitoring dashboard   
-* deploy บน cloud environment   
+---
+
+> เอกสารฉบับนี้เป็น README สำหรับงาน Final Lab Set 2 รายวิชา ENGSE207 Software Architecture
