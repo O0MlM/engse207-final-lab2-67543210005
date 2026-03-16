@@ -584,7 +584,10 @@
 
 <script>
 /* ── STATE ── */
-const API  = '';           // ใช้ relative URL (Nginx จัดการ)
+const AUTH_API = "http://localhost:3001";
+const TASK_API = "http://localhost:3002";
+const USER_API = "http://localhost:3003";
+
 let token  = localStorage.getItem('jwt_token');
 let currentUser = null;
 let allTasks = [];
@@ -596,7 +599,7 @@ async function doLogin() {
   const password = document.getElementById('login-password').value;
   if (!email || !password) { showAuthMsg('กรุณากรอกข้อมูลให้ครบ', 'error'); return; }
 
-  const res  = await fetch(`${API}/api/auth/login`, {
+  const res  = await fetch(`${AUTH_API}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -681,7 +684,7 @@ async function apiFetch(url, options = {}) {
    TASKS — LOAD & RENDER
 ───────────────────────────────────── */
 async function loadTasks() {
-  const res  = await apiFetch(`${API}/api/tasks/`, { headers: authHeaders() });
+  const res  = await apiFetch(`${TASK_API}/api/tasks`, { headers: authHeaders() });
   const data = await res.json();
 
   if (!res.ok) {
@@ -787,14 +790,14 @@ async function submitTask() {
   let res;
   if (id) {
     // PUT — update existing
-    res = await apiFetch(`${API}/api/tasks/${id}`, {
+    res = await apiFetch(`http://localhost:3002/api/tasks/${id}`, {
       method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify(body)
     });
   } else {
     // POST — create new
-    res = await apiFetch(`${API}/api/tasks/`, {
+    res = await apiFetch(`http://localhost:3002/api/tasks/`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(body)
@@ -820,7 +823,7 @@ function confirmDelete(id) {
   deleteTargetId = id;
   document.getElementById('confirm-modal').classList.remove('hidden');
   document.getElementById('confirm-delete-btn').onclick = async () => {
-    const res = await apiFetch(`${API}/api/tasks/${deleteTargetId}`, {
+    const res = await apiFetch(`http://localhost:3002/api/tasks/${deleteTargetId}`, {
       method: 'DELETE',
       headers: authHeaders()
     });
@@ -842,7 +845,7 @@ function closeConfirm() {
 }
 
 async function loadProfile() {
-  const res  = await apiFetch(`${API}/api/users/me`, { headers: authHeaders() });
+  const res  = await apiFetch(`${USER_API}/api/users/me`, { headers: authHeaders() });
   const data = await res.json();
   const u    = data.user || currentUser;
   if (!u) return;
@@ -903,7 +906,7 @@ function escHtml(s) {
 /* ── AUTO-LOGIN ── */
 if (token) {
   (async () => {
-    const res  = await fetch(`${API}/api/auth/verify`, {
+    const res  = await fetch(`http://localhost:3001/api/auth/verify`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
