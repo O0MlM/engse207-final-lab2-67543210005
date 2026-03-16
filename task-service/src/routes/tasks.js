@@ -36,35 +36,25 @@ router.get('/health', (_, res) => res.json({ status: 'ok', service: 'task-servic
 router.use(requireAuth);
 
 // GET TASKS
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
 
-    let result;
+    const userId = req.user.id || req.user.userId
 
-    if (req.user.role === 'admin') {
-      result = await pool.query(`
-        SELECT t.*, u.username
-        FROM tasks t
-        JOIN users u ON t.user_id = u.id
-        ORDER BY t.created_at DESC
-      `);
-    } else {
-      result = await pool.query(`
-        SELECT t.*, u.username
-        FROM tasks t
-        JOIN users u ON t.user_id = u.id
-        WHERE t.user_id = $1
-        ORDER BY t.created_at DESC
-      `, [req.user.sub]);
-    }
+    const result = await pool.query(
+      'SELECT * FROM tasks WHERE user_id = $1 ORDER BY id',
+      [userId]
+    )
 
-    res.json({ tasks: result.rows, count: result.rowCount });
+    res.json(result.rows)
 
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
 
+    console.error('TASK ERROR:', err)
+
+    res.status(500).json({ error: 'Server error' })
+  }
+})
 
 // CREATE TASK
 router.post('/', async (req, res) => {

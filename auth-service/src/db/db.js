@@ -1,20 +1,11 @@
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  host: process.env.DB_HOST || "auth-db",
+  port: process.env.DB_PORT || 5432,
+  user: process.env.DB_USER || "auth_user",
+  password: process.env.DB_PASSWORD || "auth_pass",
+  database: process.env.DB_NAME || "auth_db"
 });
 
-module.exports = { pool };
-
-// Auto-create tables on startup
-async function initDB() {
-  const fs = require('fs');
-  const path = require('path');
-  const sql = fs.readFileSync(
-    path.join(__dirname, 'init.sql'), 'utf8'
-  );
-  await pool.query(sql);
-  console.log('[auth-db] Tables initialized');
-}
-
-module.exports = { pool, initDB };
+module.exports = pool;
