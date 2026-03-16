@@ -911,17 +911,17 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* ── AUTO-LOGIN ── */
-if (token) {
-  (async () => {
-    const res  = await fetch(`http://localhost:3001/api/auth/verify`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (data.valid) initApp(data.user);
-    else { localStorage.removeItem('jwt_token'); token = null; }
-  })();
-}
+// /* ── AUTO-LOGIN ── */
+// if (token) {
+//   (async () => {
+//     const res  = await fetch(`http://localhost:3001/api/auth/verify`, {
+//       headers: { Authorization: `Bearer ${token}` }
+//     });
+//     const data = await res.json();
+//     if (data.valid) initApp(data.user);
+//     else { localStorage.removeItem('jwt_token'); token = null; }
+//   })();
+// }
 
 /* ─────────────────────────────────────
    API HELPER
@@ -933,14 +933,21 @@ if (token) {
 //   };
 // }
 
-// async function apiFetch(url, options = {}) {
-//   const res = await fetch(url, {
-//     ...options,
-//     headers: {
-//       ...(options.headers || {}),
-//       ...(token ? { Authorization: `Bearer ${token}` } : {})
-//     }
-//   });
+async function apiFetch(url, options = {}) {
+
+  const token = localStorage.getItem("token")
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": token ? `Bearer ${token}` : "",
+      ...(options.headers || {})
+    }
+  })
+
+  return res.json()
+}
 
 //   return res;
 // }

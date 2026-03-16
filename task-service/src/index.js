@@ -1,29 +1,62 @@
-require('dotenv').config();
-const express = require('express');
-const cors    = require('cors');
-const morgan  = require('morgan');
-const { initDB } = require('./db/db');
-const taskRoutes = require('./routes/tasks');
+const express = require("express");
+const cors = require("cors");
 
-const app  = express();
-const PORT = process.env.PORT || 3002;
+const { Pool } = require("pg");
+const jwt = require("jsonwebtoken");
+
+const app = express();
+
+const taskRoutes = require("./routes/tasks");
 
 app.use(cors());
 app.use(express.json());
-app.use(morgan('combined', {
-  stream: { write: (msg) => console.log(msg.trim()) }
-}));
 
-app.use('/api/tasks', taskRoutes);
-app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
+app.use("/api/tasks", taskRoutes);
 
-async function start() {
-  let retries = 10;
-  while (retries > 0) {
-    try { await initDB(); break; }
-    catch { retries--; await new Promise(r => setTimeout(r, 3000)); }
+app.listen(3002, () => {
+  console.log("Task service running");
+});
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+
+function authMiddleware(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).json({ error: "No token" });
+
+  const token = header.split(" ")[1];
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload;
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
   }
-  app.listen(PORT, () => console.log(`[task-service] Running on port ${PORT}`));
 }
 
-start();
+app.get("/health", (req, res) => {
+  res.json({ status: "task-service ok" });
+});
+
+app.get("/api/tasks", authMiddleware, async (req, res) => {
+  const result = await pool.query(
+    "SELECT * FROM tasks WHERE user_id=$1 ORDER BY id",
+    [req.user.id]
+  );
+  res.json(result.rows);
+});
+
+app.post("/api/tasks", authMiddleware, async (req, res) => {
+  const { title, description } = req.body;
+
+  const result = await pool.query(
+    "INSERT INTO tasks (user_id,title,description) VALUES ($1,$2,$3) RETURNING *",
+    [req.user.id, title, description]
+  );
+
+  res.json(result.rows[0]);
+});

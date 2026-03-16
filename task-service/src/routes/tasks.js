@@ -36,10 +36,10 @@ router.get('/health', (_, res) => res.json({ status: 'ok', service: 'task-servic
 router.use(requireAuth);
 
 // GET TASKS
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
 
-    const userId = req.user.id || req.user.userId
+    const userId = req.user.id
 
     const result = await pool.query(
       'SELECT * FROM tasks WHERE user_id = $1 ORDER BY id',
@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
       `INSERT INTO tasks (user_id,title,description,status,priority)
        VALUES ($1,$2,$3,$4,$5)
        RETURNING *`,
-      [req.user.sub, title, description, status, priority]
+      [req.user.id, title, description, status, priority]
     );
 
     const task = result.rows[0];
@@ -79,7 +79,7 @@ router.post('/', async (req, res) => {
     await logEvent({
       level: 'INFO',
       event: 'TASK_CREATED',
-      userId: req.user.sub,
+      userId: req.user.id,
       ip: req.headers['x-real-ip'] || req.ip,
       method: 'POST',
       path: '/api/tasks',
@@ -112,7 +112,7 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    if (check.rows[0].user_id !== req.user.sub && req.user.role !== 'admin') {
+    if (check.rows[0].user_id !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -133,7 +133,7 @@ router.put('/:id', async (req, res) => {
     await logEvent({
       level: 'INFO',
       event: 'TASK_UPDATED',
-      userId: req.user.sub,
+      userId: req.user.id,
       ip: req.headers['x-real-ip'] || req.ip,
       method: 'PUT',
       path: `/api/tasks/${id}`,
@@ -165,7 +165,7 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    if (check.rows[0].user_id !== req.user.sub && req.user.role !== 'admin') {
+    if (check.rows[0].user_id !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -177,7 +177,7 @@ router.delete('/:id', async (req, res) => {
     await logEvent({
       level: 'INFO',
       event: 'TASK_DELETED',
-      userId: req.user.sub,
+      userId: req.user.id,
       ip: req.headers['x-real-ip'] || req.ip,
       method: 'DELETE',
       path: `/api/tasks/${id}`,
