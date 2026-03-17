@@ -7,6 +7,10 @@ const authRoutes = require('./routes/auth');
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[auth-service] Running on port ${PORT}`);
+});
+
 // ── Middleware ──
 app.use(cors({
   origin: "*",
@@ -46,8 +50,4 @@ app.use((err, req, res, _next) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`[auth-service] Running on port ${PORT}`);
   console.log(`[auth-service] JWT_EXPIRES: ${process.env.JWT_EXPIRES || '1h'}`);
-});
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`[auth-service] Running on port ${PORT}`);
 });
