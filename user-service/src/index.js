@@ -10,13 +10,14 @@ app.use(express.json());
 
 app.use("/api/users", auth, usersRoute);
 
-app.listen(process.env.PORT || 3003, ()=>{
-  console.log("User service running");
+app.get("/health", (req,res)=>{
+  res.json({
+    status:"ok",
+    service:"user-service"
+  });
 });
 
-app.get("/health", (req,res)=>{
-    res.json({
-      status:"ok",
-      service:"user-service"
-    });
-  });
+const PORT = process.env.PORT || 3003;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`User service running on port ${PORT}`);
+});
