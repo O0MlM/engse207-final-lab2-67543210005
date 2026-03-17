@@ -31,6 +31,10 @@ app.use(morgan(':method :url :status :response-time ms - body::body-size', {
 // ── Routes ──
 app.use('/api/auth', authRoutes);
 
+app.get("/health", (req,res)=>{
+  res.json({ status:"ok", service:"auth-service-root" });
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.path });
