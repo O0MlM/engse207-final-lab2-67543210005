@@ -584,15 +584,9 @@
 
 <script>
 /* ── STATE ── */
-<<<<<<< HEAD
 const AUTH_API = "http://localhost:3001";
 const TASK_API = "http://localhost:3002";
 const USER_API = "http://localhost:3003";
-=======
-const AUTH_API = "https://auth-service-production-8add.up.railway.app";
-const TASK_API = "https://task-service-production-002b.up.railway.app";
-const USER_API = "https://user-service-production-2ee3.up.railway.app";
->>>>>>> afdc3d4 (Commit Fixs Something..)
 
 let token  = localStorage.getItem('jwt_token');
 let currentUser = null;
@@ -675,11 +669,7 @@ function authHeaders() {
 }
 
 async function apiFetch(url, options = {}) {
-<<<<<<< HEAD
-  const token = localStorage.getItem("token");
-=======
   const token = localStorage.getItem("jwt_token");
->>>>>>> afdc3d4 (Commit Fixs Something..)
 
   const res = await fetch(url, {
     ...options,
@@ -702,24 +692,10 @@ async function apiFetch(url, options = {}) {
    TASKS — LOAD & RENDER
 ───────────────────────────────────── */
 async function loadTasks() {
-<<<<<<< HEAD
-  const res  = await apiFetch(`${TASK_API}/api/tasks`, { headers: authHeaders() });
-  const data = await res.json();
-
-  if (!res.ok) {
-    if (res.status === 401) { toast('Session หมดอายุ กรุณา Login ใหม่', 'error'); doLogout(); }
-    return;
-  }
-
-  allTasks = data.tasks || [];
-  updateStats();
-  renderTasks();
-  document.getElementById('task-count').textContent = allTasks.length;
-=======
   try {
     const data = await apiFetch(`${TASK_API}/api/tasks`);
-
-    allTasks = data.tasks || [];
+    
+    allTasks = Array.isArray(data) ? data : (data.tasks || []);
     updateStats();
     renderTasks();
     document.getElementById('task-count').textContent = allTasks.length;
@@ -727,7 +703,6 @@ async function loadTasks() {
   } catch (err) {
     toast('โหลด Tasks ไม่ได้: ' + err.message, 'error');
   }
->>>>>>> afdc3d4 (Commit Fixs Something..)
 }
 
 function updateStats() {
@@ -819,23 +794,6 @@ async function submitTask() {
   btn.innerHTML = '<span class="spinner"></span>';
   btn.disabled  = true;
 
-<<<<<<< HEAD
-  let res;
-  if (id) {
-    // PUT — update existing
-    res = await apiFetch(`http://localhost:3002/api/tasks/${id}`, {
-      method: 'PUT',
-      headers: authHeaders(),
-      body: JSON.stringify(body)
-    });
-  } else {
-    // POST — create new
-    res = await apiFetch(`http://localhost:3002/api/tasks/`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify(body)
-    });
-=======
   try {
   if (id) {
     await apiFetch(`${TASK_API}/api/tasks/${id}`, {
@@ -856,40 +814,16 @@ async function submitTask() {
 
   } catch (err) {
     toast('❌ ' + err.message, 'error');
->>>>>>> afdc3d4 (Commit Fixs Something..)
   }
 
   btn.disabled  = false;
   btn.textContent = id ? '💾 อัปเดต' : '💾 สร้าง Task';
-
-<<<<<<< HEAD
-  if (res.ok) {
-    toast(id ? '✅ อัปเดต Task แล้ว' : '✅ สร้าง Task แล้ว', 'success');
-    closeModal();
-    loadTasks();
-  } else {
-    const data = await res.json();
-    if (res.status === 403) toast('🚫 403 Forbidden: คุณไม่มีสิทธิ์แก้ไข Task นี้', 'error', 4000);
-    else toast('❌ ' + (data.error || 'เกิดข้อผิดพลาด'), 'error');
-  }
-=======
-  // if (res.ok) {
-  //   toast(id ? '✅ อัปเดต Task แล้ว' : '✅ สร้าง Task แล้ว', 'success');
-  //   closeModal();
-  //   loadTasks();
-  // } else {
-  //   const data = await res.json();
-  //   if (res.status === 403) toast('🚫 403 Forbidden: คุณไม่มีสิทธิ์แก้ไข Task นี้', 'error', 4000);
-  //   else toast('❌ ' + (data.error || 'เกิดข้อผิดพลาด'), 'error');
-  // }
->>>>>>> afdc3d4 (Commit Fixs Something..)
 }
 
 let deleteTargetId = null;
 function confirmDelete(id) {
   deleteTargetId = id;
   document.getElementById('confirm-modal').classList.remove('hidden');
-<<<<<<< HEAD
   document.getElementById('confirm-delete-btn').onclick = async () => {
     const res = await apiFetch(`http://localhost:3002/api/tasks/${deleteTargetId}`, {
       method: 'DELETE',
@@ -903,21 +837,6 @@ function confirmDelete(id) {
       const data = await res.json();
       if (res.status === 403) toast('🚫 403 Forbidden: คุณลบ Task ของคนอื่นไม่ได้', 'error', 4000);
       else toast('❌ ' + (data.error || 'Error'), 'error');
-=======
-
-  document.getElementById('confirm-delete-btn').onclick = async () => {
-    try {
-      await apiFetch(`${TASK_API}/api/tasks/${deleteTargetId}`, {
-        method: 'DELETE'
-      });
-
-      toast('🗑️ ลบ Task แล้ว', 'info');
-      closeConfirm();
-      loadTasks();
-
-    } catch (err) {
-      toast('❌ ' + err.message, 'error');
->>>>>>> afdc3d4 (Commit Fixs Something..)
       closeConfirm();
     }
   };
@@ -928,7 +847,6 @@ function closeConfirm() {
 }
 
 async function loadProfile() {
-<<<<<<< HEAD
   const res  = await apiFetch(`${USER_API}/api/users/me`, { headers: authHeaders() });
   const data = await res.json();
   const u    = data.user || currentUser;
@@ -947,31 +865,6 @@ async function loadProfile() {
   rb.className   = `role-badge role-${u.role}`;
 
   renderJwtInspector();
-=======
-  try {
-    const data = await apiFetch(`${USER_API}/api/users/me`);
-    const u = data.user || currentUser;
-    if (!u) return;
-
-    const initial = (u.username || u.email || '?').charAt(0).toUpperCase();
-    document.getElementById('prof-avatar').textContent  = initial;
-    document.getElementById('prof-name').textContent    = u.username || '—';
-    document.getElementById('prof-email').textContent   = u.email;
-    document.getElementById('prof-id').textContent      = u.id || '—';
-    document.getElementById('prof-role').textContent    = u.role;
-    document.getElementById('prof-created').textContent =
-      u.created_at ? new Date(u.created_at).toLocaleDateString('th-TH') : '—';
-
-    const rb = document.getElementById('prof-role-badge');
-    rb.textContent = u.role;
-    rb.className   = `role-badge role-${u.role}`;
-
-    renderJwtInspector();
-
-  } catch (err) {
-    toast('โหลดโปรไฟล์ไม่ได้: ' + err.message, 'error');
-  }
->>>>>>> afdc3d4 (Commit Fixs Something..)
 }
 
 function renderJwtInspector() {
@@ -1034,28 +927,25 @@ function escHtml(s) {
 //   };
 // }
 
-<<<<<<< HEAD
-async function apiFetch(url, options = {}) {
+// async function apiFetch(url, options = {}) {
 
-  const token = localStorage.getItem("token")
+//   const token = localStorage.getItem("token")
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": token ? `Bearer ${token}` : "",
-      ...(options.headers || {})
-    }
-  })
+//   const res = await fetch(url, {
+//     ...options,
+//     headers: {
+//       "Content-Type": "application/json",
+//       "Authorization": token ? `Bearer ${token}` : "",
+//       ...(options.headers || {})
+//     }
+//   })
 
-  return res.json()
-}
+//   return res.json()
+// }
 
 //   return res;
 // }
 
-=======
->>>>>>> afdc3d4 (Commit Fixs Something..)
 /* ─────────────────────────────────────
    TOAST
 ───────────────────────────────────── */

@@ -8,8 +8,6 @@ CREATE TABLE tasks (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-<<<<<<< HEAD
-=======
 CREATE TABLE logs (
   id SERIAL PRIMARY KEY,
   level TEXT,
@@ -17,7 +15,6 @@ CREATE TABLE logs (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
->>>>>>> afdc3d4 (Commit Fixs Something..)
 INSERT INTO tasks (user_id, title, description, status, priority) VALUES
 (1,'ออกแบบ UI หน้า Login','ใช้ Figma ออกแบบ mockup','TODO','high'),
 (1,'เขียน API สำหรับ Task CRUD','Express.js + PostgreSQL','IN_PROGRESS','high'),

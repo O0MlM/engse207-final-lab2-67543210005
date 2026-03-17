@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>👤 โปรไฟล์ผู้ใช้</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .card {
+      max-width: 520px;
+      margin: auto;
+      background: #111827;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    h1 { margin-top: 0; }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #0b1220;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    .btn {
+      margin-top: 22px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover { background: #1d4ed8; }
+
+    .info {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .success { color: #22c55e; }
+    .error { color: #ef4444; }
+
+    .topbar {
+      max-width: 520px;
+      margin: auto;
+      margin-bottom: 18px;
+      text-align: right;
+    }
+
+    .link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .link:hover { text-decoration: underline; }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="link">← กลับหน้า Tasks</a>
+</div>
+
+<div class="card">
+  <h1>👤 โปรไฟล์ของฉัน</h1>
+
+  <div class="info" id="basicInfo">กำลังโหลดข้อมูล...</div>
+
+  <label>Display Name</label>
+  <input id="display_name" placeholder="ชื่อที่แสดง" />
+
+  <label>Bio</label>
+  <textarea id="bio" placeholder="เขียนแนะนำตัวสั้น ๆ"></textarea>
+
+  <button class="btn btn-primary" onclick="updateProfile()">
+    💾 บันทึกข้อมูล
+  </button>
+
+  <div class="info" id="statusMsg"></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const USER = window.APP_CONFIG.USER_URL;
+const token = localStorage.getItem('jwt_token');
+
+if (!token) {
+  alert('กรุณาเข้าสู่ระบบก่อน');
+  window.location.href = 'index.html';
+}
+
+function setStatus(msg, type='') {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'info ' + type;
+}
+
+async function loadProfile() {
+  try {
+    const res = await fetch(`${USER}/api/users/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+
+    const data = await res.json();
+    const p = data.profile;
+
+    document.getElementById('display_name').value = p.display_name || '';
+    document.getElementById('bio').value = p.bio || '';
+
+    document.getElementById('basicInfo').innerHTML =
+      `Username: <b>${p.username}</b><br>
+       Email: <b>${p.email}</b><br>
+       Role: <b>${p.role}</b>`;
+
+  } catch (err) {
+    setStatus('❌ ไม่สามารถโหลดโปรไฟล์ได้', 'error');
+  }
+}
+
+async function updateProfile() {
+  const display_name = document.getElementById('display_name').value;
+  const bio = document.getElementById('bio').value;
+
+  try {
+    const res = await fetch(`${USER}/api/users/me`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ display_name, bio })
+    });
+
+    if (!res.ok) throw new Error();
+
+    setStatus('✅ บันทึกสำเร็จ', 'success');
+
+  } catch {
+    setStatus('❌ บันทึกไม่สำเร็จ', 'error');
+  }
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>

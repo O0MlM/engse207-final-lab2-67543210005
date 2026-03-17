@@ -8,8 +8,6 @@ CREATE TABLE IF NOT EXISTS users (
   last_login TIMESTAMP
 );
 
-<<<<<<< HEAD
-=======
 CREATE TABLE logs (
   id SERIAL PRIMARY KEY,
   level TEXT,
@@ -17,7 +15,6 @@ CREATE TABLE logs (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
->>>>>>> afdc3d4 (Commit Fixs Something..)
 INSERT INTO users (username, email, password_hash, role)
 VALUES
 (
