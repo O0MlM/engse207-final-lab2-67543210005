@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 CREATE TABLE IF NOT EXISTS user_profiles (
+=======
+CREATE TABLE IF NOT EXISTS user (
+>>>>>>> afdc3d4 (Commit Fixs Something..)
   id SERIAL PRIMARY KEY,
   user_id INTEGER UNIQUE NOT NULL,
   username VARCHAR(50),
@@ -8,4 +12,14 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   bio TEXT,
   avatar_url VARCHAR(255),
   updated_at TIMESTAMP DEFAULT NOW()
+<<<<<<< HEAD
+=======
+);
+
+CREATE TABLE logs (
+  id SERIAL PRIMARY KEY,
+  level TEXT,
+  message TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+>>>>>>> afdc3d4 (Commit Fixs Something..)
 );
