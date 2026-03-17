@@ -9,8 +9,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret";
 /* =========================
    HEALTH CHECK
 ========================= */
-router.get("/health", async (req, res) => {
-  res.json({ status: "ok" });
+router.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "auth-service"
+  });
 });
 
 /* =========================
