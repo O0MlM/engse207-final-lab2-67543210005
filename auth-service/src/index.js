@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const morgan  = require('morgan');
-const { initDB } = require('./db/db');
 const authRoutes = require('./routes/auth');
 
 const app  = express();
@@ -44,24 +43,9 @@ app.use((err, req, res, _next) => {
 });
 
 // ── Start ──
-async function start() {
-  // รอ DB พร้อม
-  let retries = 10;
-  while (retries > 0) {
-    try {
-      await initDB();
-      break;
-    } catch (err) {
-      console.log(`[auth-service] Waiting for DB... (${retries} retries left)`);
-      retries--;
-      await new Promise(r => setTimeout(r, 3000));
-    }
-  }
-
-  app.listen(PORT, () => {
-    console.log(`[auth-service] Running on port ${PORT}`);
-    console.log(`[auth-service] JWT_EXPIRES: ${process.env.JWT_EXPIRES || '1h'}`);
-  });
-}
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[auth-service] Running on port ${PORT}`);
+  console.log(`[auth-service] JWT_EXPIRES: ${process.env.JWT_EXPIRES || '1h'}`);
+});
 
 start();
